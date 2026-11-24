@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Алиас</title>
+<meta name="theme-color" content="#1b1440">
+<meta name="description" content="Алиас — объясни слово другими словами. Командная игра для компании.">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Алиас">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="Алиас">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1b1440;--bg2:#2a1f5c;--card:#fff;--ink:#1b1440;--muted:#9a93c9;--txt:#f4f1ff;
+  --ok:#22c55e;--bad:#ef4444;--acc:#facc15;--acc2:#a78bfa;--line:rgba(255,255,255,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{font-family:Rubik,system-ui,sans-serif;background:radial-gradient(120% 80% at 50% 0%,var(--bg2),var(--bg));color:var(--txt);
+  min-height:100dvh;display:flex;justify-content:center;overscroll-behavior:none}
+#app{width:100%;max-width:480px;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));display:flex;flex-direction:column;min-height:100dvh}
+h1{font-size:44px;margin:12px 0 4px;font-weight:800;letter-spacing:-1px;text-align:center}
+h1 span{color:var(--acc)}
+h2{font-size:22px;margin:18px 0 10px}
+.sub{color:var(--muted);text-align:center;margin:0 0 20px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:16px;padding:16px 20px;font-size:18px;cursor:pointer;background:var(--acc);color:var(--ink);width:100%;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--txt);border:2px solid var(--line)}
+.btn.sm{padding:8px 14px;font-size:15px;width:auto;border-radius:12px}
+.btn.ok{background:var(--ok);color:#fff}.btn.bad{background:var(--bad);color:#fff}
+.row{display:flex;gap:10px;align-items:center}
+.stack{display:flex;flex-direction:column;gap:10px}
+.grow{flex:1}
+.panel{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:18px;padding:14px}
+input[type=text]{font:inherit;font-size:17px;width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--txt);outline:none}
+input[type=text]:focus{border-color:var(--acc2)}
+.num{display:flex;align-items:center;gap:4px;flex:none;width:104px;padding:0 10px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);height:44px}
+.num.on{border-color:var(--acc2);box-shadow:inset 0 0 0 1px var(--acc2)}
+.num input{width:100%;min-width:0;font:inherit;font-size:17px;font-weight:600;background:none;border:0;color:var(--txt);outline:none;text-align:right;-moz-appearance:textfield}
+.num input::-webkit-inner-spin-button,.num input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.num span{color:var(--muted);font-size:14px}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 30%}
+select.dict{font:inherit;font-size:15px;flex:none;width:136px;padding:12px 8px;border-radius:12px;border:1px solid var(--line);background:#120d2e;color:var(--txt);outline:none}
+.row input{min-width:0}
+.x{background:none;border:0;color:var(--muted);font-size:26px;cursor:pointer;padding:0 6px;line-height:1}
+.seg{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;font:inherit;font-size:15px;font-weight:600;border:0;border-radius:9px;padding:9px 4px;background:none;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--acc2);color:var(--ink)}
+.lbl{font-size:14px;color:var(--muted);margin:14px 0 6px}
+.switch{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;font-size:15px}
+.switch input{width:46px;height:26px;appearance:none;background:rgba(0,0,0,.35);border-radius:20px;position:relative;cursor:pointer;flex:none}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .15s}
+.switch input:checked{background:var(--ok)}.switch input:checked::after{left:23px}
+.foot{margin-top:auto;padding-top:20px}
+.score{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.06);margin-bottom:8px;font-size:18px}
+.score.cur{outline:2px solid var(--acc)}
+.score b{font-size:24px}
+.bar{height:6px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc2)}
+/* game */
+.top{display:flex;justify-content:space-between;align-items:center;font-size:18px}
+.timer{font-size:40px;font-weight:800;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--bad);animation:pulse .5s infinite alternate}
+@keyframes pulse{to{transform:scale(1.12)}}
+.arena{flex:1;display:flex;align-items:center;justify-content:center;position:relative;margin:16px 0;touch-action:none}
+.card{background:var(--card);color:var(--ink);border-radius:26px;width:100%;min-height:260px;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:24px;font-size:clamp(30px,9vw,46px);font-weight:800;box-shadow:0 20px 50px rgba(0,0,0,.4);user-select:none;word-break:break-word;
+  transition:transform .25s,opacity .25s}
+.card.fly-up{transform:translateY(-120%) rotate(-6deg);opacity:0}
+.card.fly-down{transform:translateY(120%) rotate(6deg);opacity:0}
+.card.enter{animation:enter .2s}
+@keyframes enter{from{transform:scale(.85);opacity:0}}
+.card .tr{font-size:22px;font-weight:500;color:#6d5bd0;margin-top:12px}
+.trbtn{display:block;margin:16px auto 0;font:inherit;font-size:16px;font-weight:600;border:2px dashed #c4b8f5;background:#f4f1ff;color:#5b4bc4;border-radius:12px;padding:8px 14px;cursor:pointer}
+.trbtn small{display:block;font-size:12px;font-weight:400;color:#8a80b8}
+.hint{position:absolute;left:0;right:0;text-align:center;font-size:14px;color:var(--muted)}
+.hint.t{top:0}.hint.b{bottom:0}
+.lastword{background:var(--bad);color:#fff;text-align:center;border-radius:12px;padding:8px;font-weight:700;margin-top:10px}
+.big{font-size:64px;font-weight:800;text-align:center;margin:10px 0}
+.list .it{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;margin-bottom:6px;cursor:pointer;font-size:18px;user-select:none}
+.list .it.g{background:rgba(34,197,94,.18)}.list .it.s{background:rgba(239,68,68,.15);color:#fca5a5}
+.list .it span:last-child{font-weight:700}
+.center{text-align:center}
+.muted{color:var(--muted)}
+.trophy{font-size:90px;text-align:center;margin-top:30px}
+/* установка приложения */
+#install{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:10;display:flex;align-items:center;gap:10px;max-width:456px;margin:0 auto;
+  padding:10px 10px 10px 12px;background:#120d2e;border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#install[hidden]{display:none}
+#install img{width:40px;height:40px;border-radius:10px;flex:none}
+#install .it{flex:1;min-width:0;display:flex;flex-direction:column;font-size:13px;line-height:1.3}
+#install .it span{color:var(--muted)}
+#install .btn{flex:none}
+#install .x{flex:none}
+@media(display-mode:standalone){#install{display:none!important}}
+body:has(#install:not([hidden])) #app{padding-bottom:110px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="install" hidden>
+  <img src="./icon-192.png" alt="">
+  <div class="it"><b>Приложение «Алиас»</b><span id="install-txt">Отдельное окно без браузера, работает офлайн</span></div>
+  <button class="btn sm" id="install-btn" onclick="doInstall()">Установить</button>
+  <button class="x" onclick="hideInstall(true)" aria-label="Закрыть">×</button>
+</div>
+<script src="./words-base.js"></script>
+<script src="./words-en.js"></script>
+<script>
+"use strict";
+/* ---------- словари ---------- */
+const WORDS={
+easy:`кот собака дом мяч солнце луна дерево машина книга стол стул окно дверь яблоко банан молоко хлеб сыр рыба птица цветок море река гора снег дождь зонт шапка шарф носок ботинок телефон часы ключ ложка вилка нож тарелка чашка чайник холодильник кровать подушка одеяло зеркало расческа мыло зубная_щетка школа учитель врач повар пожарный полицейский клоун король принцесса пират робот динозавр слон жираф обезьяна лев тигр медведь заяц волк лиса ёж змея лягушка бабочка пчела муравей паук корова лошадь свинья курица утка пингвин дельфин акула кит торт мороженое конфета пицца суп каша чай кофе сок арбуз клубника морковь картошка помидор огурец лимон апельсин велосипед самолет поезд корабль автобус ракета вертолет мост улица парк магазин больница театр кино цирк зоопарк праздник подарок ёлка шарик игрушка кукла барабан гитара пианино рисунок карандаш ручка тетрадь рюкзак очки кольцо корона замок`,
+medium:`путешествие отпуск чемодан паспорт аэропорт гостиница пляж палатка костер рыбалка охота футбол хоккей теннис шахматы бокс плавание марафон олимпиада чемпион тренер судья болельщик стадион концерт оркестр дирижер певец фотограф художник скульптура музей библиотека университет экзамен диплом каникулы будильник календарь пароль компьютер интернет смартфон наушники батарейка зарядка микроволновка пылесос стиральная_машина утюг лифт эскалатор светофор пешеход такси метро парковка заправка бензин колесо руль навигатор карта компас глобус телескоп микроскоп лаборатория изобретение космонавт планета звезда комета вулкан землетрясение радуга молния туман ураган пустыня джунгли оазис водопад пещера остров маяк якорь подводная_лодка сокровище детектив шпион преступник адвокат свидетель тюрьма банк кредит зарплата налог бизнес реклама журналист новости газета блогер подписчик лайк селфи свадьба невеста жених юбилей тост кулинария рецепт духовка шашлык пельмени блины борщ салат десерт ресторан официант чаевые меню диета фитнес зарядка йога массаж аптека таблетка прививка температура насморк стоматолог хирург`,
+kids:`каникулы дневник оценка контрольная перемена звонок портфель пенал линейка циркуль глобус доска мел учебник библиотека столовая физкультура математика география история литература английский химия физика экскурсия олимпиада лагерь поход палатка костер компас фонарик рюкзак бутерброд термос велосипед самокат скейтборд ролики коньки лыжи сноуборд батут качели горка карусель аттракцион аквапарк бассейн футбол баскетбол волейбол шахматы шашки домино пазл конструктор головоломка загадка викторина приставка джойстик компьютерная_игра уровень персонаж монстр герой злодей супергерой волшебник дракон единорог привидение вампир русалка инопланетянин космос астронавт ракета луноход метеорит телескоп микроскоп эксперимент изобретатель робот планшет наушники зарядка видео мультфильм комикс кинотеатр попкорн газировка чипсы шоколад пицца гамбургер мороженое жвачка лимонад день_рождения торт свечи подарок сюрприз фейерверк новый_год дед_мороз снеговик снежки санки сосулька каток гроза радуга лужа зонтик сапоги пижама будильник зубная_паста холодильник микроволновка пылесос лифт подъезд балкон дача огород грядка рыбалка удочка зоопарк аквариум хомяк попугай черепаха котенок щенок крокодил кенгуру панда енот белка павлин сова летучая_мышь осьминог медуза краб улитка муравейник пчелиный_улей паутина гнездо водопад вулкан пещера пустыня остров пират сокровище карта_сокровищ корабль подводная_лодка маяк рыцарь замок принцесса король корона меч щит ниндзя ковбой детектив полицейский пожарный ветеринар повар тренер фотограф блогер певец барабанщик гитарист оркестр цирк фокусник клоун акробат жонглер театр кукла марионетка рисунок краски кисточка пластилин ножницы клей`,
+newyear:`ёлка гирлянда мишура дождик ёлочная_игрушка звезда_на_ёлке шишка снежинка снеговик снегурочка дед_мороз санта_клаус олени сани посох мешок_с_подарками подарок упаковка бантик носок_для_подарков письмо_деду_морозу желание бой_курантов куранты бокал шампанское бенгальский_огонь хлопушка конфетти серпантин фейерверк салют петарда новогодняя_ночь полночь обратный_отсчёт обращение_президента телевизор голубой_огонёк ирония_судьбы оливье селёдка_под_шубой мандарин холодец заливное икра бутерброд_с_икрой пирог имбирное_печенье пряник глинтвейн какао горячий_шоколад гусь утка_с_яблоками торт_наполеон застолье тост гости корпоратив утренник костюм маска карнавал маскарад хоровод стишок_на_табуретке новогодний_концерт ёлочный_базар распродажа очередь_в_магазине календарь символ_года гороскоп старый_новый_год рождество колядки гадание сочельник ангел вертеп свеча камин варежки шапка_с_помпоном валенки шуба тулуп свитер_с_оленями плед снегопад сугроб метель мороз иней узоры_на_окне сосулька гололёд лёд каток коньки лыжи санки ватрушка снежки снежная_крепость снежный_ангел горка лыжный_курорт зимние_каникулы выходные отпуск рукавица снегоуборщик лопата дворник оттепель северное_сияние полярная_ночь пингвин белый_медведь лапландия эльф гном северный_полюс фабрика_подарков фигурка_символа_года открытка поздравление видеозвонок смс_в_полночь чёрная_пятница список_подарков секретный_санта обмен_подарками сюрприз загадать_желание записка_с_желанием сжечь_бумажку обещания_на_новый_год итоги_года новая_жизнь_с_понедельника похмелье первое_января тазик_салата доедать_салаты фото_у_ёлки дискотека танцы караоке`,
+science:`атом молекула электрон протон нейтрон ядро изотоп радиоактивность периодическая_таблица химическая_реакция катализатор кислота щёлочь соль раствор кристалл полимер окисление ржавчина горение кислород водород углерод азот углекислый_газ гравитация масса скорость ускорение инерция трение давление сила_тяжести невесомость вакуум магнит электричество ток напряжение сопротивление батарейка проводник полупроводник лазер свет звук эхо волна частота спектр радуга линза призма отражение преломление температура абсолютный_ноль теплопроводность испарение конденсация плавление кипение теория_относительности чёрная_дыра большой_взрыв галактика млечный_путь солнечная_система орбита спутник телескоп астероид комета метеорит туманность сверхновая световой_год экзопланета марсоход клетка ядро_клетки днк ген хромосома мутация эволюция естественный_отбор фотосинтез хлорофилл бактерия вирус микроб антибиотик вакцина иммунитет нейрон мозг гормон адреналин белок фермент метаболизм скелет позвоночник кровообращение динозавр окаменелость палеонтолог археолог раскопки тектонические_плиты землетрясение вулкан магма ледник климат парниковый_эффект озоновый_слой экосистема пищевая_цепочка биология химия физика астрономия геология экология генетика математика уравнение формула теорема доказательство гипотеза аксиома бесконечность число_пи ноль дробь процент интеграл производная вероятность статистика график алгоритм эксперимент наблюдение лаборатория пробирка колба микроскоп учёный профессор диссертация научная_статья открытие изобретение патент нобелевская_премия коллайдер робот искусственный_интеллект квантовый_компьютер нанотехнологии`,
+hard:`ностальгия интуиция вдохновение компромисс репутация амбиция дедлайн прокрастинация мотивация харизма иллюзия парадокс демократия революция инфляция монополия конкуренция стартап инвестор дивиденды бюрократия коррупция дипломатия санкции эволюция гравитация энергия молекула вакцина иммунитет генетика клонирование искусственный_интеллект алгоритм виртуальная_реальность криптовалюта блокчейн шифрование хакер вирус антивирус облако пароль сарказм ирония метафора рифма сюжет кульминация эпилог трилогия жанр антагонист импровизация аплодисменты премьера гастроли бестселлер плагиат цензура пропаганда идеология философия психология медитация гипноз сновидение дежавю суеверие карма гороскоп талисман ритуал традиция этикет менталитет толерантность эмпатия вежливость ревность обида благодарность совесть сомнение любопытство терпение лень паника адреналин экстрим риск азарт удача катастрофа эвакуация волонтер благотворительность наследство завещание ипотека аренда ремонт переезд соседи субботник очередь пробка час_пик удаленка совещание презентация отчет`
+};
+const DICTS={base:"Базовый",kids:"Детский",easy:"Лёгкий",medium:"Средний",hard:"Сложный",mix:"Микс",newyear:"Новогодний",science:"Наука",english:"Английский"};
+const DICT_NOTE={base:"около 4000 самых разных слов — основной словарь",kids:"для детей 10–14 лет",easy:"самые простые слова",medium:"обычная игра",hard:"абстрактные понятия",mix:"лёгкие, средние и сложные вперемешку",newyear:"ёлка, салаты, подарки и всё про праздник",science:"физика, химия, биология, космос и математика",english:"около 500 английских слов; без перевода +2, с переводом +1"};
+const plural=(n,a,b,c)=>{const m=n%100,d=n%10;return m>10&&m<20?c:d===1?a:d>=2&&d<=4?b:c};
+WORDS.base=self.WORDS_BASE||"";
+const POOLS={};
+const pool=k=>POOLS[k]||(POOLS[k]=k==="english"
+  ?(self.WORDS_EN||"").split("\n").map(l=>l.trim()).filter(l=>l.includes("="))   // «слово=перевод»
+  :WORDS[k].trim().split(/\s+/).map(w=>w.replace(/_/g," ")));
+const wordOf=e=>e.split("=")[0], trOf=e=>e.split("=")[1]||"";
+// очки за слово: угадано без перевода +2, с открытым переводом +1 (у слов без перевода всегда +1); пропуск −1
+const pts=(x,isLast)=>x.g?(trOf(x.w)&&!x.o?2:1):(S.penalty&&!isLast?-1:0);
+
+/* ---------- состояние ---------- */
+const KEY="alias-v1";
+const defaults=()=>({screen:"home",teams:[{name:"Котики",score:0,level:"base"},{name:"Ёжики",score:0,level:"base"}],
+  dur:60,goal:50,penalty:true,lastWord:true,cur:0,round:1,used:[],turn:null});
+let S;try{S=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){S=defaults()}
+S.teams.forEach(t=>{if(!DICTS[t.level])t.level=DICTS[S.level]?S.level:"medium"});delete S.level; // словарь теперь у каждой команды
+if(S.screen==="play")S.screen="ready"; // таймер не переживает перезагрузку
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const app=$("#app");
+let tick=null;
+
+function go(screen){S.screen=screen;save();render()}
+function render(){clearInterval(tick);({home,setup,ready,play,review,board,win})[S.screen]()}
+
+/* ---------- звук и вибрация ---------- */
+let ac;function beep(f=660,d=.12,t="sine"){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();
+  o.type=t;o.frequency.value=f;g.gain.setValueAtTime(.2,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+  o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+d)}catch(e){}}
+const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
+
+/* ---------- экраны ---------- */
+function home(){
+  const going=S.teams.some(t=>t.score)||S.round>1;
+  app.innerHTML=`<div style="margin-top:12vh"></div>
+  <h1>Али<span>ас</span></h1>
+  <p class="sub">Объясни слово, не называя его</p>
+  <div class="panel muted" style="font-size:15px;line-height:1.5">
+   Игроки делятся на команды. Один объясняет слова своей команде синонимами, жестами, ассоциациями — но без однокоренных слов.
+   Свайп ↑ или «Угадали» — +1, свайп ↓ или «Пропуск» — −1 (если включён штраф). Кто первым наберёт нужные очки — победил.
+  </div>
+  <div class="foot stack">
+   ${going?`<button class="btn" onclick="go('board')">Продолжить игру</button>`:""}
+   <button class="btn ${going?"ghost":""}" onclick="newGame()">Новая игра</button>
+  </div>`;
+}
+function newGame(){const t=S.teams.map(x=>({name:x.name,score:0,level:x.level}));
+  Object.assign(S,{teams:t,cur:0,round:1,used:[],turn:null});go("setup")}
+
+function setup(){
+  const seg=(key,opts)=>`<div class="seg">${opts.map(([v,l])=>`<button class="${S[key]===v?"on":""}" onclick="setOpt('${key}',${JSON.stringify(v).replace(/"/g,"'")})">${l}</button>`).join("")}</div>`;
+  app.innerHTML=`<div class="row"><button class="btn sm ghost" onclick="go('home')">←</button><h2 class="grow" style="margin:0">Настройки</h2></div>
+  <div class="lbl">Команды</div>
+  <div class="stack" id="teams">${S.teams.map((t,i)=>`<div class="row">
+     <input type="text" value="${esc(t.name)}" maxlength="20" oninput="S.teams[${i}].name=this.value;save()">
+     <select class="dict" onchange="S.teams[${i}].level=this.value;save();setup()" aria-label="Словарь команды">${dictOpts(t.level)}</select>
+     ${S.teams.length>2?`<button class="x" onclick="S.teams.splice(${i},1);save();setup()">×</button>`:""}</div>`).join("")}
+   ${S.teams.length<6?`<button class="btn sm ghost" onclick="addTeam()">+ Команда</button>`:""}
+  </div>
+  <div class="lbl">Время на ход</div>${numPick("dur",[30,60,90,120],"сек")}
+  <div class="lbl">Очков для победы</div>${numPick("goal",[30,50,75,100],"очк")}
+  <div class="lbl">Словарь для всех команд</div>
+  <div class="seg wrap">${Object.keys(DICTS).map(k=>`<button class="${S.teams.every(t=>t.level===k)?"on":""}" onclick="setAll('${k}')">${DICTS[k]}</button>`).join("")}</div>
+  <p class="muted" style="font-size:13px;margin:8px 0 0">${S.teams.every(t=>t.level===S.teams[0].level)?`${DICTS[S.teams[0].level]}: ${DICT_NOTE[S.teams[0].level]}.`
+    :"У команд разные словари — выбраны у каждой команды выше."} ${seenNote()} Играете с детьми? Дайте детской команде «Детский», а взрослым — «Средний» или «Сложный».</p>
+  <label class="switch"><span>Штраф за пропуск (−1)</span><input type="checkbox" ${S.penalty?"checked":""} onchange="S.penalty=this.checked;save()"></label>
+  <label class="switch"><span>Последнее слово — для всех команд</span><input type="checkbox" ${S.lastWord?"checked":""} onchange="S.lastWord=this.checked;save()"></label>
+  <div class="foot"><button class="btn" onclick="startGame()">Поехали!</button></div>`;
+}
+const NAMES=["Совы","Пельмени","Ракеты","Бобры","Единороги","Тапки"];
+function addTeam(){S.teams.push({name:NAMES.find(n=>!S.teams.some(t=>t.name===n))||"Команда "+(S.teams.length+1),score:0,level:S.teams[S.teams.length-1].level});save();setup()}
+const dictOpts=cur=>Object.keys(DICTS).map(k=>`<option value="${k}" ${k===cur?"selected":""}>${DICTS[k]}</option>`).join("");
+function setAll(k){S.teams.forEach(t=>t.level=k);save();setup()}
+function setOpt(k,v){S[k]=v;save();setup()}
+// пресеты + поле для любого значения
+const LIMITS={dur:[10,600],goal:[5,500]};
+function numPick(key,presets,unit){
+  const [mn,mx]=LIMITS[key];
+  return `<div class="row"><div class="seg grow">${presets.map(v=>`<button class="${S[key]===v?"on":""}" onclick="setOpt('${key}',${v})">${v}</button>`).join("")}</div>
+   <label class="num ${presets.includes(S[key])?"":"on"}"><input type="number" inputmode="numeric" min="${mn}" max="${mx}" value="${S[key]}"
+     aria-label="Своё значение" onfocus="this.select()" onkeydown="if(event.key==='Enter')this.blur()" onchange="setNum('${key}',this.value)"><span>${unit}</span></label></div>`;
+}
+function setNum(k,v){const [mn,mx]=LIMITS[k];v=Math.round(+v);if(!isFinite(v)||!v){setup();return}
+  setOpt(k,Math.min(mx,Math.max(mn,v)))}
+function startGame(){S.teams.forEach((t,i)=>{t.name=t.name.trim()||"Команда "+(i+1)});go("ready")}
+
+function ready(){
+  const t=S.teams[S.cur];
+  app.innerHTML=`<div class="top"><span class="muted">Раунд ${S.round}</span><button class="btn sm ghost" onclick="go('board')">Счёт</button></div>
+  <div style="margin-top:14vh" class="center muted">Объясняет команда</div>
+  <div class="big" style="font-size:44px">${esc(t.name)}</div>
+  <div class="center muted">${t.score} из ${S.goal} ${plural(S.goal,"очка","очков","очков")} · словарь «${DICTS[t.level]}»</div>
+  <div class="panel center muted" style="margin-top:30px;font-size:15px">Передайте телефон объясняющему.${t.level==="english"?"<br>Слова на английском: угадали без перевода — +2, с переводом — +1.":""}<br>У вас ${S.dur} ${plural(S.dur,"секунда","секунды","секунд")}.</div>
+  <div class="foot"><button class="btn" onclick="startTurn()">Старт</button></div>`;
+}
+
+/* ---------- выбор слова ----------
+   История показанных слов хранится по каждому словарю между играми (отдельно от партии).
+   Слово выпадает случайно из ещё не показанных; когда словарь пройден целиком, история
+   очищается, но последние ~30% показанных слов придерживаются, чтобы они не вылезли сразу снова. */
+const HKEY="alias-seen-v1";
+let SEEN;try{SEEN=JSON.parse(localStorage.getItem(HKEY))||{}}catch(e){SEEN={}}
+const saveSeen=()=>{try{localStorage.setItem(HKEY,JSON.stringify(SEEN))}catch(e){}};
+function rnd(n){ // честный случайный индекс 0..n-1 (crypto, если доступен)
+  try{const a=new Uint32Array(1),lim=Math.floor(4294967296/n)*n;do crypto.getRandomValues(a);while(a[0]>=lim);return a[0]%n}
+  catch(e){return Math.random()*n|0}
+}
+function seenCount(lv){const all=new Set(pool(lv));return (SEEN[lv]||[]).filter(w=>all.has(w)).length}
+function seenNote(){
+  const lvs=[...new Set(S.teams.flatMap(t=>t.level==="mix"?["easy","medium","hard"]:[t.level]))];
+  const n=lvs.reduce((a,l)=>a+seenCount(l),0),m=lvs.reduce((a,l)=>a+pool(l).length,0);
+  return n?`Уже выпадало ${n} из ${m} слов — они не повторятся, пока не выйдут остальные (<a href="#" onclick="event.preventDefault();resetSeen()" style="color:var(--acc2)">сбросить</a>).`:""}
+function resetSeen(){SEEN={};saveSeen();setup()}
+function nextWord(){
+  const L=S.teams[S.cur].level;const lv=L==="mix"?["easy","medium","hard"][rnd(3)]:L;
+  const all=pool(lv),u=new Set(S.used);
+  let hist=SEEN[lv]||[],h=new Set(hist);
+  let p=all.filter(w=>!u.has(w)&&!h.has(w));
+  if(!p.length){                       // словарь пройден — новый круг
+    hist=hist.slice(-Math.floor(all.length*.3));h=new Set(hist);
+    p=all.filter(w=>!u.has(w)&&!h.has(w));
+  }
+  if(!p.length){                       // в этой партии вышли все слова словаря
+    const a=new Set(all);S.used=S.used.filter(w=>!a.has(w));hist=[];p=all;
+  }
+  const w=p[rnd(p.length)];
+  S.used.push(w);hist.push(w);SEEN[lv]=hist;saveSeen();
+  return w;
+}
+function startTurn(){
+  S.turn={word:nextWord(),log:[],end:Date.now()+S.dur*1000,last:false};
+  go("play");beep(880,.2);
+}
+function play(){
+  const T=S.turn;
+  app.innerHTML=`<div class="top"><span>${esc(S.teams[S.cur].name)}</span><span class="timer" id="tm"></span><span>✓ <b id="cnt">0</b></span></div>
+  <div id="lw"></div>
+  <div class="arena" id="arena">
+    <div class="hint t">↑ угадали</div>
+    <div class="card enter" id="card">${cardHTML()}</div>
+    <div class="hint b">↓ пропуск</div>
+  </div>
+  <div class="row"><button class="btn bad grow" onclick="answer(false)">Пропуск</button><button class="btn ok grow" onclick="answer(true)">Угадали</button></div>`;
+  updCnt();
+  // свайпы
+  let y0=null;const card=$("#card"),ar=$("#arena");
+  ar.onpointerdown=e=>{y0=e.clientY;card.style.transition="none"};
+  ar.onpointermove=e=>{if(y0!==null)card.style.transform=`translateY(${e.clientY-y0}px)`};
+  ar.onpointerup=ar.onpointercancel=e=>{if(y0===null)return;const dy=e.clientY-y0;y0=null;card.style.transition="";card.style.transform="";
+    if(dy<-70)answer(true);else if(dy>70)answer(false)};
+  const step=()=>{
+    const left=Math.ceil((T.end-Date.now())/1000);
+    if(left<=0&&!T.last){
+      if(S.lastWord){T.last=true;save();$("#tm").textContent="0";$("#tm").classList.remove("low");
+        $("#lw").innerHTML=`<div class="lastword">Время! Последнее слово — может угадать любая команда</div>`;beep(220,.5,"square");buzz([200,100,200])}
+      else{finishTurn();}
+      return;
+    }
+    if(T.last)return;
+    $("#tm").textContent=left;$("#tm").classList.toggle("low",left<=5);
+    if(left<=5&&left!==step.prev){beep(500,.08);step.prev=left}
+  };
+  if(T.last){$("#lw").innerHTML=`<div class="lastword">Последнее слово — может угадать любая команда</div>`;$("#tm").textContent="0"}
+  else{step();tick=setInterval(step,250)}
+}
+function cardHTML(){const T=S.turn,tr=trOf(T.word);
+  return `<div>${esc(wordOf(T.word))}${tr?(T.open?`<div class="tr">${esc(tr)}</div>`
+    :`<button class="trbtn" onpointerdown="event.stopPropagation()" onclick="showTr()">Показать перевод<small>сейчас +2, с переводом +1</small></button>`):""}</div>`}
+function showTr(){S.turn.open=true;save();$("#card").innerHTML=cardHTML()}
+function updCnt(){$("#cnt").textContent=S.turn.log.filter(x=>x.g).length}
+let busy=false;
+function answer(g){
+  if(busy)return;const T=S.turn;
+  T.log.push({w:T.word,g,o:!!T.open});T.open=false;buzz(g?30:[20,40,20]);beep(g?990:300,.1);
+  const card=$("#card");busy=true;card.classList.add(g?"fly-up":"fly-down");
+  setTimeout(()=>{busy=false;
+    if(T.last){finishTurn();return}
+    T.word=nextWord();save();card.className="card enter";card.innerHTML=cardHTML();updCnt()},220);
+}
+function finishTurn(){clearInterval(tick);go("review")}
+
+function turnPoints(){const T=S.turn;let p=0;T.log.forEach((x,i)=>{const isLast=T.last&&i===T.log.length-1;
+  if(!(x.g&&isLast&&x.team!=null&&x.team!==S.cur))p+=pts(x,isLast)});return p}
+function review(){
+  const T=S.turn;const lastIdx=T.last?T.log.length-1:-1;
+  const lastItem=T.log[lastIdx];
+  app.innerHTML=`<h2>Итоги хода</h2><p class="muted" style="margin-top:-4px">Нажмите на слово, чтобы исправить результат${T.log.some(x=>trOf(x.w))?". Английские слова: +2 → +1 (с переводом) → пропуск":""}</p>
+  <div class="list">${T.log.map((x,i)=>`<div class="it ${x.g?"g":"s"}" onclick="flip(${i})"><span>${esc(wordOf(x.w))}${trOf(x.w)?` <small class="muted">— ${esc(trOf(x.w))}${x.g&&x.o?" (перевод открыт)":""}</small>`:""}${i===lastIdx?" <small>(последнее)</small>":""}</span><span>${(v=>v>0?"+"+v:v<0?"−"+(-v):"0")(pts(x,i===lastIdx))}</span></div>`).join("")||`<p class="muted">Ни одного слова…</p>`}</div>
+  ${lastItem&&lastItem.g&&S.lastWord?`<div class="lbl">Кто угадал последнее слово?</div>
+   <div class="seg" style="flex-wrap:wrap">${S.teams.map((t,i)=>`<button class="${(lastItem.team??S.cur)===i?"on":""}" onclick="S.turn.log[${lastIdx}].team=${i};save();review()">${esc(t.name)}</button>`).join("")}</div>`:""}
+  <div class="big">${turnPoints()>0?"+":""}${turnPoints()}</div>
+  <div class="foot"><button class="btn" onclick="applyTurn()">Записать очки</button></div>`;
+}
+function flip(i){const x=S.turn.log[i];
+  if(trOf(x.w)){if(x.g&&!x.o)x.o=true;else if(x.g){x.g=false;x.o=false}else x.g=true}  // +2 → +1 → пропуск → +2
+  else x.g=!x.g;
+  save();review()}
+function applyTurn(){
+  const T=S.turn;S.teams[S.cur].score+=turnPoints();
+  const l=T.last&&T.log[T.log.length-1];
+  if(l&&l.g&&l.team!=null&&l.team!==S.cur)S.teams[l.team].score+=pts(l,true);
+  S.turn=null;
+  const endOfRound=S.cur===S.teams.length-1;
+  S.cur=(S.cur+1)%S.teams.length;
+  if(endOfRound){
+    const max=Math.max(...S.teams.map(t=>t.score));
+    if(max>=S.goal&&S.teams.filter(t=>t.score===max).length===1){go("win");return}
+    S.round++;
+  }
+  go("board");
+}
+function board(){
+  const sorted=S.teams.map((t,i)=>({...t,i})).sort((a,b)=>b.score-a.score);
+  app.innerHTML=`<div class="top"><button class="btn sm ghost" onclick="go('home')">Меню</button><span class="muted">Раунд ${S.round} · до ${S.goal}</span></div>
+  <h2>Счёт</h2>
+  ${sorted.map(t=>`<div class="score ${t.i===S.cur?"cur":""}"><div class="grow">${esc(t.name)}${new Set(S.teams.map(x=>x.level)).size>1?` <small class="muted">· ${DICTS[t.level]}</small>`:""}<div class="bar"><i style="width:${Math.max(0,Math.min(100,t.score/S.goal*100))}%"></i></div></div><b style="margin-left:14px">${t.score}</b></div>`).join("")}
+  <p class="muted center" style="font-size:14px">Победитель определяется в конце раунда, когда все команды сходили.</p>
+  <div class="foot"><button class="btn" onclick="go('ready')">Ход команды «${esc(S.teams[S.cur].name)}»</button></div>`;
+}
+function win(){
+  const w=[...S.teams].sort((a,b)=>b.score-a.score);
+  app.innerHTML=`<div class="trophy">🏆</div><div class="center muted">Победила команда</div><div class="big" style="font-size:44px">${esc(w[0].name)}</div>
+  ${w.map(t=>`<div class="score"><span>${esc(t.name)}</span><b>${t.score}</b></div>`).join("")}
+  <div class="foot stack"><button class="btn" onclick="newGame()">Сыграть ещё</button><button class="btn ghost" onclick="go('home')">В меню</button></div>`;
+  beep(660,.15);setTimeout(()=>beep(880,.15),150);setTimeout(()=>beep(1320,.3),300);
+}
+document.addEventListener("keydown",e=>{if(S.screen!=="play")return;
+  if(e.key==="ArrowUp"||e.key===" ")answer(true);else if(e.key==="ArrowDown")answer(false)});
+render();
+
+/* ---------- установка как приложение (PWA) ---------- */
+let installEvt=null;
+const INST_KEY="alias.inst";
+const isStandalone=()=>{try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}};
+const installDismissed=()=>{try{return localStorage.getItem(INST_KEY)==="0"}catch(e){return false}};
+function showInstall(hint){
+  if(isStandalone()||installDismissed())return;
+  $("#install-txt").textContent=hint||"Отдельное окно без браузера, работает офлайн";
+  $("#install-btn").hidden=!!hint;
+  $("#install").hidden=false;
+}
+function hideInstall(forever){$("#install").hidden=true;if(forever)try{localStorage.setItem(INST_KEY,"0")}catch(e){}}
+function doInstall(){
+  if(!installEvt)return;installEvt.prompt();
+  installEvt.userChoice.then(r=>{if(r&&r.outcome==="accepted")hideInstall()}).catch(()=>{});
+  installEvt=null;
+}
+// Chrome / Edge / Android: настоящая кнопка «Установить»
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;showInstall()});
+addEventListener("appinstalled",()=>hideInstall(true));
+addEventListener("load",()=>setTimeout(()=>{
+  if(installEvt)return;
+  const ua=navigator.userAgent||"";
+  // iPhone/iPad: установка только вручную через Safari
+  if(/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))
+    showInstall("Нажмите «Поделиться» ⎋ → «На экран „Домой“»");
+  // Android-браузеры без такого события (Яндекс, Samsung и др.)
+  else if(/Android/.test(ua))showInstall("Меню браузера ⋮ → «Установить приложение»");
+},4000));
+if("serviceWorker" in navigator&&location.protocol!=="file:")
+  addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+</script>
+</body>
+</html>

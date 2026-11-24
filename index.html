@@ -77,6 +77,10 @@ select.dict{font:inherit;font-size:15px;flex:none;width:136px;padding:12px 8px;b
 .card.fly-down{transform:translateY(120%) rotate(6deg);opacity:0}
 .card.enter{animation:enter .2s}
 @keyframes enter{from{transform:scale(.85);opacity:0}}
+.countdown{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.countdown .num{font-size:160px;font-weight:800;line-height:1;color:var(--acc);font-variant-numeric:tabular-nums;animation:cd 1s ease-out}
+@keyframes cd{from{transform:scale(1.6);opacity:0}30%{opacity:1}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.countdown .num{animation:none}}
 .card .tr{font-size:22px;font-weight:500;color:#6d5bd0;margin-top:12px}
 .trbtn{display:block;margin:16px auto 0;font:inherit;font-size:16px;font-weight:600;border:2px dashed #c4b8f5;background:#f4f1ff;color:#5b4bc4;border-radius:12px;padding:8px 14px;cursor:pointer}
 .trbtn small{display:block;font-size:12px;font-weight:400;color:#8a80b8}
@@ -90,6 +94,11 @@ select.dict{font:inherit;font-size:15px;flex:none;width:136px;padding:12px 8px;b
 .center{text-align:center}
 .muted{color:var(--muted)}
 .trophy{font-size:90px;text-align:center;margin-top:30px}
+/* диалог */
+#dlg{position:fixed;inset:0;z-index:30;background:rgba(10,6,30,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+#dlg .box{background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:20px;width:100%;max-width:400px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+#dlg p{margin:0 0 16px;font-size:18px;line-height:1.4;text-align:center}
+.top .tname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 10px}
 /* установка приложения */
 #install{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:10;display:flex;align-items:center;gap:10px;max-width:456px;margin:0 auto;
   padding:10px 10px 10px 12px;background:#120d2e;border:1px solid var(--line);border-left:5px solid var(--acc);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
@@ -142,7 +151,7 @@ const defaults=()=>({screen:"home",teams:[{name:"Котики",score:0,level:"ba
   dur:60,goal:50,penalty:true,lastWord:true,cur:0,round:1,used:[],turn:null});
 let S;try{S=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){S=defaults()}
 S.teams.forEach(t=>{if(!DICTS[t.level])t.level=DICTS[S.level]?S.level:"medium"});delete S.level; // словарь теперь у каждой команды
-if(S.screen==="play")S.screen="ready"; // таймер не переживает перезагрузку
+if(S.screen==="play"||S.screen==="count")S.screen="ready"; // таймер не переживает перезагрузку
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -150,7 +159,7 @@ const app=$("#app");
 let tick=null;
 
 function go(screen){S.screen=screen;save();render()}
-function render(){clearInterval(tick);({home,setup,ready,play,review,board,win})[S.screen]()}
+function render(){clearInterval(tick);({home,setup,ready,count,play,review,board,win})[S.screen]()}
 
 /* ---------- звук и вибрация ---------- */
 let ac;function beep(f=660,d=.12,t="sine"){try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();
@@ -160,7 +169,7 @@ const buzz=p=>{try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}};
 
 /* ---------- экраны ---------- */
 function home(){
-  const going=S.teams.some(t=>t.score)||S.round>1;
+  const going=S.teams.some(t=>t.score)||S.round>1||S.cur>0;
   app.innerHTML=`<div style="margin-top:12vh"></div>
   <h1>Али<span>ас</span></h1>
   <p class="sub">Объясни слово, не называя его</p>
@@ -170,9 +179,20 @@ function home(){
   </div>
   <div class="foot stack">
    ${going?`<button class="btn" onclick="go('board')">Продолжить игру</button>`:""}
-   <button class="btn ${going?"ghost":""}" onclick="newGame()">Новая игра</button>
+   <button class="btn ${going?"ghost":""}" onclick="${going?"askNewGame()":"newGame()"}">Новая игра</button>
   </div>`;
 }
+// диалог подтверждения внутри страницы
+function dialog(text,buttons){
+  const d=document.createElement("div");d.id="dlg";
+  d.innerHTML=`<div class="box"><p>${text}</p><div class="stack">${buttons.map((b,i)=>`<button class="btn ${b.cls||""}" data-i="${i}">${b.label}</button>`).join("")}</div></div>`;
+  d.onclick=e=>{const i=e.target.dataset&&e.target.dataset.i;if(i==null&&e.target!==d)return;
+    d.remove();const b=i==null?buttons.find(x=>x.cancel):buttons[i];b&&b.fn&&b.fn()};
+  document.body.appendChild(d);
+}
+function askNewGame(){dialog("Начать новую игру? Текущий счёт будет сброшен. Команды и настройки сохранятся — их можно поменять.",
+  [{label:"Новая игра",cls:"bad",fn:newGame},{label:"Отмена",cls:"ghost",cancel:true}])}
+function toMenu(){S.turn=null;go("home")}
 function newGame(){const t=S.teams.map(x=>({name:x.name,score:0,level:x.level}));
   Object.assign(S,{teams:t,cur:0,round:1,used:[],turn:null});go("setup")}
 
@@ -215,7 +235,7 @@ function startGame(){S.teams.forEach((t,i)=>{t.name=t.name.trim()||"Команд
 
 function ready(){
   const t=S.teams[S.cur];
-  app.innerHTML=`<div class="top"><span class="muted">Раунд ${S.round}</span><button class="btn sm ghost" onclick="go('board')">Счёт</button></div>
+  app.innerHTML=`<div class="top"><button class="btn sm ghost" onclick="go('home')">Меню</button><span class="muted">Раунд ${S.round}</span><button class="btn sm ghost" onclick="go('board')">Счёт</button></div>
   <div style="margin-top:14vh" class="center muted">Объясняет команда</div>
   <div class="big" style="font-size:44px">${esc(t.name)}</div>
   <div class="center muted">${t.score} из ${S.goal} ${plural(S.goal,"очка","очков","очков")} · словарь «${DICTS[t.level]}»</div>
@@ -256,13 +276,25 @@ function nextWord(){
   S.used.push(w);hist.push(w);SEEN[lv]=hist;saveSeen();
   return w;
 }
-function startTurn(){
+// «Старт» → обратный отсчёт 3-2-1 → ход; таймер хода запускается только после отсчёта
+function startTurn(){go("count")}
+function count(){
+  let n=3;
+  app.innerHTML=`<div class="top"><button class="btn sm ghost" onclick="go('ready')">Отмена</button><span class="muted">${esc(S.teams[S.cur].name)}</span><span></span></div>
+  <div class="countdown"><div class="center muted">Приготовились…</div><div class="num" id="cd">3</div></div>`;
+  beep(520,.15);buzz(40);
+  tick=setInterval(()=>{
+    if(--n>0){const el=$("#cd");el.textContent=n;el.style.animation="none";el.offsetWidth;el.style.animation="";beep(520,.15);buzz(40)}
+    else beginTurn();
+  },1000);
+}
+function beginTurn(){
   S.turn={word:nextWord(),log:[],end:Date.now()+S.dur*1000,last:false};
-  go("play");beep(880,.2);
+  go("play");beep(880,.25);buzz(120);
 }
 function play(){
   const T=S.turn;
-  app.innerHTML=`<div class="top"><span>${esc(S.teams[S.cur].name)}</span><span class="timer" id="tm"></span><span>✓ <b id="cnt">0</b></span></div>
+  app.innerHTML=`<div class="top"><button class="btn sm ghost" onclick="pauseTurn()" aria-label="Пауза и меню">❚❚</button><span class="tname">${esc(S.teams[S.cur].name)}</span><span class="timer" id="tm"></span><span>✓ <b id="cnt">0</b></span></div>
   <div id="lw"></div>
   <div class="arena" id="arena">
     <div class="hint t">↑ угадали</div>
@@ -292,6 +324,20 @@ function play(){
   if(T.last){$("#lw").innerHTML=`<div class="lastword">Последнее слово — может угадать любая команда</div>`;$("#tm").textContent="0"}
   else{step();tick=setInterval(step,250)}
 }
+// пауза: таймер останавливается, можно продолжить, выйти в меню или начать заново
+function pauseTurn(){
+  const T=S.turn;if(!T||T.paused)return;
+  if(!T.last){T.left=Math.max(0,T.end-Date.now());clearInterval(tick)}
+  T.paused=true;save();
+  dialog("Пауза. Время остановлено.",[
+    {label:"Продолжить",fn:resumeTurn,cancel:true},
+    {label:"Прервать ход и выйти в меню",cls:"ghost",fn:()=>dialog("Прервать ход? Слова этого хода не засчитаются, ход останется за этой командой.",
+      [{label:"Прервать",cls:"bad",fn:toMenu},{label:"Назад к игре",cls:"ghost",fn:resumeTurn,cancel:true}])},
+    {label:"Новая игра",cls:"ghost",fn:()=>dialog("Начать новую игру? Текущий счёт будет сброшен. Команды и настройки сохранятся — их можно поменять.",
+      [{label:"Новая игра",cls:"bad",fn:newGame},{label:"Назад к игре",cls:"ghost",fn:resumeTurn,cancel:true}])}
+  ]);
+}
+function resumeTurn(){const T=S.turn;if(!T)return;if(!T.last)T.end=Date.now()+T.left;T.paused=false;go("play")}
 function cardHTML(){const T=S.turn,tr=trOf(T.word);
   return `<div>${esc(wordOf(T.word))}${tr?(T.open?`<div class="tr">${esc(tr)}</div>`
     :`<button class="trbtn" onpointerdown="event.stopPropagation()" onclick="showTr()">Показать перевод<small>сейчас +2, с переводом +1</small></button>`):""}</div>`}
@@ -299,7 +345,7 @@ function showTr(){S.turn.open=true;save();$("#card").innerHTML=cardHTML()}
 function updCnt(){$("#cnt").textContent=S.turn.log.filter(x=>x.g).length}
 let busy=false;
 function answer(g){
-  if(busy)return;const T=S.turn;
+  if(busy||S.turn.paused)return;const T=S.turn;
   T.log.push({w:T.word,g,o:!!T.open});T.open=false;buzz(g?30:[20,40,20]);beep(g?990:300,.1);
   const card=$("#card");busy=true;card.classList.add(g?"fly-up":"fly-down");
   setTimeout(()=>{busy=false;
@@ -313,7 +359,7 @@ function turnPoints(){const T=S.turn;let p=0;T.log.forEach((x,i)=>{const isLast=
 function review(){
   const T=S.turn;const lastIdx=T.last?T.log.length-1:-1;
   const lastItem=T.log[lastIdx];
-  app.innerHTML=`<h2>Итоги хода</h2><p class="muted" style="margin-top:-4px">Нажмите на слово, чтобы исправить результат${T.log.some(x=>trOf(x.w))?". Английские слова: +2 → +1 (с переводом) → пропуск":""}</p>
+  app.innerHTML=`<div class="top"><button class="btn sm ghost" onclick="dialog('Выйти в меню? Очки этого хода не будут записаны, ход останется за этой командой.',[{label:'Выйти без записи',cls:'bad',fn:toMenu},{label:'Отмена',cls:'ghost',cancel:true}])">Меню</button><span></span></div><h2>Итоги хода</h2><p class="muted" style="margin-top:-4px">Нажмите на слово, чтобы исправить результат${T.log.some(x=>trOf(x.w))?". Английские слова: +2 → +1 (с переводом) → пропуск":""}</p>
   <div class="list">${T.log.map((x,i)=>`<div class="it ${x.g?"g":"s"}" onclick="flip(${i})"><span>${esc(wordOf(x.w))}${trOf(x.w)?` <small class="muted">— ${esc(trOf(x.w))}${x.g&&x.o?" (перевод открыт)":""}</small>`:""}${i===lastIdx?" <small>(последнее)</small>":""}</span><span>${(v=>v>0?"+"+v:v<0?"−"+(-v):"0")(pts(x,i===lastIdx))}</span></div>`).join("")||`<p class="muted">Ни одного слова…</p>`}</div>
   ${lastItem&&lastItem.g&&S.lastWord?`<div class="lbl">Кто угадал последнее слово?</div>
    <div class="seg" style="flex-wrap:wrap">${S.teams.map((t,i)=>`<button class="${(lastItem.team??S.cur)===i?"on":""}" onclick="S.turn.log[${lastIdx}].team=${i};save();review()">${esc(t.name)}</button>`).join("")}</div>`:""}
@@ -353,7 +399,8 @@ function win(){
   <div class="foot stack"><button class="btn" onclick="newGame()">Сыграть ещё</button><button class="btn ghost" onclick="go('home')">В меню</button></div>`;
   beep(660,.15);setTimeout(()=>beep(880,.15),150);setTimeout(()=>beep(1320,.3),300);
 }
-document.addEventListener("keydown",e=>{if(S.screen!=="play")return;
+document.addEventListener("keydown",e=>{if(S.screen!=="play"||document.getElementById("dlg"))return;
+  if(e.key==="Escape"){pauseTurn();return}
   if(e.key==="ArrowUp"||e.key===" ")answer(true);else if(e.key==="ArrowDown")answer(false)});
 render();
 

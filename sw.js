@@ -1,7 +1,7 @@
 // Service worker «Алиас»: игра работает без интернета,
 // а при наличии сети берёт свежие версии файлов.
 const PREFIX = 'alias-v';                // только свои кэши; кэши «Микста» на том же домене не трогаем
-const CACHE = PREFIX + '8';
+const CACHE = PREFIX + '10';
 const CORE = ['./', './index.html', './words-base.js', './words-en.js', './manifest.json', './icon-192.png', './icon-512.png',
   './icon-maskable-192.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png'];
 
